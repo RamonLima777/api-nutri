@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3001;
 
 
 app.use(cors({
- origin: ['https://ramon-nutri.netlify.app/', 'http://localhost:5173']
+ origin: ['https://ramon-nutri.netlify.app', 'http://localhost:5173']
 }));
 
  app.use(express.json());
