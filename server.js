@@ -1,47 +1,46 @@
 const express = require('express');
-const mysql = require('mysql2');
 const cors = require('cors');
+const nodemailer = require('nodemailer');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
-// Permitir requisições do frontend
-app.use(cors());
-app.use(express.json());
 
-// Conexão com o banco de dados
-const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'Rapture7*',
-  database: 'nutricao'
-});
+app.use(cors({
+ origin: ['https://ramon-nutri.netlify.app/', 'http://localhost:5173']
+}));
 
-// Conectar no banco
-db.connect((err) => {
-  if (err) {
-    console.error('❌ Erro ao conectar no MySQL:', err);
-  } else {
-    console.log('🟢 Conectado ao MySQL!');
+ app.use(express.json());
+
+app.post('/mensagem', async (req, res) => {
+  const { nome, email, mensagem } = req.body;
+
+  // Aqui vamos enviar por e-mail
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'ramon.lima777@gmail.com',
+      pass: 'nyfl floz agce twda'
+    }
+  });
+
+  const mailOptions = {
+    from: email,
+    to: 'ramon.lima777@gmail.com',
+    subject: 'Nova mensagem do seu site',
+    text: `Nome: ${nome}\nEmail: ${email}\nMensagem: ${mensagem}`
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Email enviado com sucesso!');
+    res.status(200).json({ message: 'Mensagem enviada por e-mail!' });
+  } catch (error) {
+    console.error('Erro ao enviar e-mail:', error);
+    res.status(500).json({ error: 'Erro ao enviar e-mail' });
   }
 });
 
-// Rota para receber dados do formulário
-app.post('/enviar-mensagem', (req, res) => {
-  const { nome, email, telefone, mensagem } = req.body;
-
-  const sql = 'INSERT INTO contatos (nome, email, telefone, mensagem) VALUES (?, ?, ?, ?)';
-  db.query(sql, [nome, email, telefone, mensagem], (err, result) => {
-    if (err) {
-      console.error('❌ Erro ao inserir:', err);
-      res.status(500).json({ error: 'Erro ao salvar no banco.' });
-    } else {
-      res.status(200).json({ message: 'Mensagem salva com sucesso!' });
-    }
-  });
-});
-
-// Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
